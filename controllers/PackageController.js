@@ -1,19 +1,34 @@
 import Package from "../models/Package.js";
+import Services from "../models/Services.js";
 import { successResponse, failedResponse } from "../utils/response.js";
 
 const getPackage = async(req, res) => {
     try {
-        const service = await Package.find();
+        const pack = await Package.find();
         return successResponse(
             res,
             "All Packages retrieved sucessfully.",
             true,
-            service
+            pack
         )
     } catch {
         return failedResponse(res, "Unable to retrieve! Something went wrong.",false);
+    }   
+}
+
+const getPackageById = async(req, res) => {
+    const { id } = req.params;
+    try {
+        const pack = await Package.find({_id: id});
+        return successResponse(
+            res,
+            "Specific package is retrieved successfully.",
+            true,
+            pack
+            )
+    } catch (error) {
+        return failedResponse(res, "Unable to retrieve package",false);
     }
-    
 }
 
 
@@ -23,11 +38,11 @@ const createPackage = async(req, res) => {
         return failedResponse(res, "Please! enter all input fields.",false);
     }else{
         try {
-            const service = await Package.create({package_name, image, price, description, serviceId});
+            const pack = await Package.create({package_name, image, price, description, serviceId});
             return successResponse(res,
                 "Package is created successfully.",
                 true,
-                service
+                pack
                 )
         } catch {
             return failedResponse(res, "Unable to create package! Something went wrong.",false);
@@ -38,23 +53,30 @@ const createPackage = async(req, res) => {
 
 
 const updatePackage = async(req, res) => {
+    const { id } = req.params;
     const { package_name, image, price, description, serviceId } = req.body;
+    // console.log(req.body);
+    // console.log(id);
     if(!package_name  || !image  || !price  || !description || !serviceId ){
         return failedResponse(res, "Please! enter all input fields.",false);
     }else{
         try {
-            const service = await Package.updateOne({
+            console.log(image);
+            const pack = await Package.findByIdAndUpdate({_id: id},
+                {
                 package_name: package_name,
                 image: image,
                 price: price,
-                description: description
+                description: description,
+                serviceId: serviceId
             })
             return successResponse(res,
                 "Package is updated successfully.",
                 true,
-                service
+                pack
                 )
-        } catch {
+        } catch(error) {
+            // console.log(error);
             return failedResponse(res, "Unable to update package! Something went wrong.",false);
         }
     }
@@ -64,14 +86,14 @@ const updatePackage = async(req, res) => {
 const deletePackage = async(req, res) => {
     const { id } = req.params;
     try {
-        const serviceExist = await Package.find({ _id: id })
-        if(serviceExist){
-            const service = await Package.deleteOne({ _id: id });
+        const packageExist = await Package.find({ _id: id })
+        if(packageExist){
+            const pack = await Package.deleteOne({ _id: id });
             return successResponse(
                 res,
                 "Package is deleted successfully.",
                 true,
-                service
+                pack
             )
         }
     } catch (error) {
@@ -84,6 +106,7 @@ const deletePackage = async(req, res) => {
 
 export {
     getPackage,
+    getPackageById,
     createPackage,
     updatePackage,
     deletePackage,
